@@ -37,6 +37,12 @@ On first launch, Deck creates its own `.venv`, installs the web app's dependenci
 
 For a hosted model, open **Keys**. The link under each built-in provider key opens its public API platform or setup guide, where you can sign in or create an account. Save the key in Deck. If your provider requires a custom endpoint, save its base URL there too. Open **MODEL**, choose or type the provider’s model ID, click **Save for next launch**, then **Start session**. A successful chat reply verifies the connection.
 
+## Windows installer
+
+Run `AiderDeck-Setup-0.1.0.exe` to install Deck for your Windows account under `%LocalAppData%\Programs\Aider-Deck`. Setup adds an **Aider-Deck** Start Menu shortcut with the app icon, offers a desktop shortcut, and registers an uninstaller. Deck needs Python 3.11 or newer on PATH. The first launch creates the Python environment and installs Deck's dependencies. Follow the setup steps above to install Git and Aider for coding sessions.
+
+Build from a clean checkout so the installer packages only the project's files. If `aider-deck.ico` is missing, run `.\.venv\Scripts\python.exe installer\make_icon.py` from the repository root using the project environment with Pillow installed. Compile `AiderDeck.iss` with [Inno Setup 6](https://jrsoftware.org/isdl.php#stable6). The installer is written to `dist\AiderDeck-Setup-0.1.0.exe`.
+
 ## Running an existing installation
 
 Double-click **run.bat** or run `.\run.bat` in the Deck folder. Use `.\run.bat --port 5180` for another port. For a foreground server without opening a browser, run the following from the same folder after the first setup.
