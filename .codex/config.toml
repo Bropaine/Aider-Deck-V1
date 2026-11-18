@@ -1,0 +1,9 @@
+# Shared configuration for Pycharm-Aider-UI.
+# Keep model, reasoning, approval, sandbox, and authentication choices in the
+# active user/app configuration. Do not put credentials in this file.
+
+# Use the Git checkout as the boundary for project configuration discovery.
+project_root_markers = [".git"]
+
+# Allow up to 32 KiB of repository instructions.
+project_doc_max_bytes = 32768

@@ -1,0 +1,50 @@
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+
+# Dependencies and build output
+node_modules/
+build/
+dist/
+coverage/
+
+# Local IDE and OS state
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Aider local state (shared configuration remains trackable)
+.aider.input.history
+.aider.chat.history.md
+.aider.tags.cache*/
+
+# Local worktrees and scratch output
+.worktrees/
+.tmp/
+*.log
+
+# Codex local state (keep .codex/config.toml tracked)
+.codex/auth.json
+.codex/history.jsonl
+.codex/sessions/
+.codex/archived_sessions/
+.codex/log/
+.codex/tmp/
+.codex/*.sqlite*
