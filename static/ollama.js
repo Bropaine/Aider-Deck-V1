@@ -214,7 +214,7 @@ export async function renderOllama(sessionStarted) {
     start.disabled = !!pending() || !status?.cli_available || status.job?.state === "running";
     const serviceMessages = [status?.error];
     if (status && !status.running && !status.cli_available)
-      serviceMessages.push("Install Ollama for Windows to start the local service.");
+      serviceMessages.push(status.install_message || "Install Ollama to start the local service.");
     const message =
       error ||
       readError ||

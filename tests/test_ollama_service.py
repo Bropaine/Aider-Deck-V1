@@ -177,15 +177,20 @@ def test_start_reuses_owner_or_one_new_hidden_process(server, monkeypatch):
     process.terminate.assert_not_called()
 
 
-def test_start_failure_explained_and_status_is_read_only(server, monkeypatch):
+@pytest.mark.parametrize(("system", "label"), [("Windows", "Windows"), ("Darwin", "macOS"), ("Linux", "Linux")])
+def test_start_failure_explained_and_status_is_read_only(server, monkeypatch, system, label):
     service, wire = server
     wire.running = False
     monkeypatch.setattr(api, "_cli", lambda: None)
-    assert not service.status()["cli_available"]
-    with pytest.raises(api.OllamaError, match="Install Ollama"):
+    monkeypatch.setattr(api.platform, "system", lambda: system)
+    message = f"Install Ollama for {label}, then start the service."
+    status = service.status()
+    assert not status["cli_available"]
+    assert status["install_message"] == message
+    with pytest.raises(api.OllamaError, match=message):
         service.start()
     failed = service.pull("test:1b")
-    assert "Install Ollama" in service.wait(failed["id"], 2)["error"]
+    assert message in service.wait(failed["id"], 2)["error"]
 
 
 def test_pull_progress_idempotency_failure_retry_and_independent_wait(server):

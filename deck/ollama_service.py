@@ -8,6 +8,7 @@ import ipaddress
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import shutil
 import subprocess
@@ -24,6 +25,13 @@ class OllamaError(ValueError):
 
 class Offline(OllamaError):
     pass
+
+
+def _install_message():
+    system = platform.system()
+    label = {"Windows": "Windows", "Darwin": "macOS", "Linux": "Linux"}.get(system)
+    target = f" for {label}" if label else ""
+    return f"Install Ollama{target}, then start the service."
 
 
 def local_endpoint(value):
@@ -276,6 +284,8 @@ class OllamaService:
             result["loaded"] = self._models("ps")
         except OllamaError as exc:
             result["error"] = str(exc)
+        if not result["running"] and not result["cli_available"]:
+            result["install_message"] = _install_message()
         return {**result, "job": self.job()}
 
     def _ensure_running(self):
@@ -293,9 +303,7 @@ class OllamaService:
             if self._process is None or self._process.poll() is not None:
                 binary = _cli()
                 if not binary:
-                    raise OllamaError(
-                        "Install Ollama for Windows, then start the service."
-                    )
+                    raise OllamaError(_install_message())
                 self._process = subprocess.Popen(
                     [binary, "serve"],
                     stdin=subprocess.DEVNULL,

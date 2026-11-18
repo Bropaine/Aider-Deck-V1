@@ -122,7 +122,7 @@ A workspace without an Aider config offers the Harbor profile. Previewing it sho
 
 ### Use a local Ollama model from the UI
 
-Open your workspace and choose **Inspector → Ollama**. Install Ollama for Windows once if it is missing. Local chat models work without an API key. [Ollama for Windows](https://docs.ollama.com/windows)
+Open your workspace and choose **Inspector → Ollama**. Install Ollama for the operating system running Deck if it is missing. Local chat models work without an API key. [Windows](https://docs.ollama.com/windows) · [macOS](https://docs.ollama.com/macos) · [Linux](https://docs.ollama.com/linux)
 
 | What you want to do | What to click |
 | --- | --- |
