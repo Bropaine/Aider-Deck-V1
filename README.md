@@ -56,11 +56,13 @@ Use `./run.sh --port 5180` to start on a different port. To start in the foregro
 python app.py
 ```
 
-### Run from a portable package
+## Run from a portable package
 
-Download the archive for your machine from a successful **Portable packages** Actions run. The two targets are `linux-x86_64` for 64-bit Intel and AMD Linux with glibc and `macos-arm64` for Apple Silicon Macs. Install Git separately. The archive includes Python and Deck's web dependencies.
+Download the archive for your machine from a successful **Portable packages** Actions run. Use `windows-x86_64` on 64-bit Intel or AMD Windows, `linux-x86_64` on 64-bit Intel or AMD Linux with glibc, or `macos-arm64` on Apple Silicon. Install Git separately. The archive includes Python and Deck's web dependencies.
 
-Extract the archive to a writable location and run its launcher. For example, on Linux:
+On Windows, extract the ZIP to a writable location and double-click **run.bat**. You can also start it from PowerShell in the extracted folder with `.\run.bat`.
+
+On Linux or macOS, extract the tarball to a writable location and run `./run.sh` from the extracted folder. For example, on Linux:
 
 ```sh
 tar -xzf aider-deck-linux-x86_64.tar.gz
@@ -68,9 +70,16 @@ cd aider-deck-linux-x86_64
 ./run.sh
 ```
 
-Deck uses an existing `aider` on your `PATH`. If it finds none, the launcher offers to install the Aider CLI into a private environment inside this copy of Deck. The first install requires internet access. You can skip it and use the rest of Deck. Run `./run.sh --install-aider` to opt in later or from a script. Deck reuses the private install on later launches from the same folder. If you move the extracted folder, rerun the installer to recreate its environment at the new location. The launcher serves port 5177 by default and accepts `--port`.
+Deck uses an existing `aider` on your `PATH`. If it finds none, the launcher offers to install the Aider CLI into a private environment inside this copy of Deck. The first install requires internet access. You can skip it and use the rest of Deck. Run `.\run.bat --install-aider` on Windows or `./run.sh --install-aider` on Linux and macOS to opt in later or from a script. Deck reuses the private install on later launches from the same folder. If you move the extracted folder, rerun the installer to recreate its environment at the new location. The launcher serves port 5177 by default and accepts `--port`.
 
-To build the archives from a committed checkout on Linux or macOS, use Python 3.12 with pip, Git and curl:
+To build and smoke-test the ZIP from a committed checkout on 64-bit Windows, use Python 3.12 with pip, Git and curl:
+
+```powershell
+python packaging/build.py windows-x86_64
+python packaging/smoke.py dist/aider-deck-windows-x86_64.zip
+```
+
+On Linux or macOS, build the tarballs with the same prerequisites:
 
 ```sh
 python3 packaging/build.py linux-x86_64

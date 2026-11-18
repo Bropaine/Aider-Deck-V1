@@ -1,17 +1,20 @@
 """Start a packaged copy of Deck and optionally install the Aider CLI."""
 
-import fcntl
 import os
 import shutil
 import subprocess
 import sys
+from contextlib import contextmanager
 from pathlib import Path
 
 
 BUNDLE = Path(__file__).resolve().parent
 PRIVATE = BUNDLE / ".aider-deck"
 VENV = PRIVATE / "aider-venv"
-AIDER = VENV / "bin" / "aider"
+WINDOWS = os.name == "nt"
+VENV_BIN = VENV / ("Scripts" if WINDOWS else "bin")
+AIDER = VENV_BIN / ("aider.exe" if WINDOWS else "aider")
+VENV_PYTHON = VENV_BIN / ("python.exe" if WINDOWS else "python")
 INSTALL_MARKER = VENV / "deck-install-location"
 AIDER_PACKAGE = "aider-chat==0.86.2"
 
@@ -35,17 +38,35 @@ def confirm_install():
     return reply.strip().lower() in {"y", "yes"}
 
 
-def install_aider():
+@contextmanager
+def install_lock():
     PRIVATE.mkdir(mode=0o700, exist_ok=True)
-    with (PRIVATE / "install.lock").open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with (PRIVATE / "install.lock").open("a+b") as lock:
+        if WINDOWS:
+            import msvcrt
+
+            lock.seek(0)
+            msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
+            try:
+                yield
+            finally:
+                msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            yield
+
+
+def install_aider():
+    with install_lock():
         if private_aider_ready():
             return
         subprocess.run(
             [sys.executable, "-I", "-m", "venv", "--clear", str(VENV)], check=True,
         )
         subprocess.run(
-            [str(VENV / "bin" / "python"), "-I", "-m", "pip", "install",
+            [str(VENV_PYTHON), "-I", "-m", "pip", "install",
              "--disable-pip-version-check", AIDER_PACKAGE],
             check=True,
         )
@@ -59,8 +80,9 @@ def prepare_aider(request_install):
         return
     if not private_aider_ready():
         if not request_install and not confirm_install():
+            launcher = r".\run.bat" if WINDOWS else "./run.sh"
             print(
-                "Aider was not found on PATH. Run ./run.sh --install-aider to install it.",
+                f"Aider was not found on PATH. Run {launcher} --install-aider to install it.",
                 file=sys.stderr,
             )
             return
@@ -79,7 +101,10 @@ def main():
             prepare_aider(request_install)
         except (OSError, subprocess.CalledProcessError) as exc:
             raise SystemExit(f"Aider could not be installed: {exc}") from None
-    os.execv(sys.executable, [sys.executable, "-E", "-s", str(BUNDLE / "app.py"), "--open", *args])
+    from app import main as run_deck
+
+    sys.argv = [str(BUNDLE / "app.py"), "--open", *args]
+    run_deck()
 
 
 if __name__ == "__main__":
