@@ -88,6 +88,12 @@ python3 packaging/build.py macos-arm64
 
 The build writes to `dist/`. Run `python3 packaging/smoke.py dist/aider-deck-linux-x86_64.tar.gz` on Linux or substitute `dist/aider-deck-macos-arm64.tar.gz` on Apple Silicon for a native smoke test.
 
+## Windows installer
+
+Run `AiderDeck-Setup-0.1.0.exe` to install Deck for your Windows account under `%LocalAppData%\Programs\Aider-Deck`. Setup adds an **Aider-Deck** Start Menu shortcut with the app icon, offers a desktop shortcut, and registers an uninstaller. Deck needs Python 3.11 or newer on PATH. The first launch creates the Python environment and installs Deck's dependencies. Follow the setup steps above to install Git and Aider for coding sessions.
+
+Build from a clean checkout so the installer packages only the project's files. If `aider-deck.ico` is missing, run `.\.venv\Scripts\python.exe installer\make_icon.py` from the repository root using the project environment with Pillow installed. Compile `AiderDeck.iss` with [Inno Setup 6](https://jrsoftware.org/isdl.php#stable6). The installer is written to `dist\AiderDeck-Setup-0.1.0.exe`.
+
 ## Running an existing installation
 
 Double-click **run.bat** or run `.\run.bat` in the Deck folder. Use `.\run.bat --port 5180` for another port. For a foreground server without opening a browser, run the following from the same folder after the first setup.
