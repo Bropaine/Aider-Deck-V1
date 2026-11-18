@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Aider Deck</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/vendor/xterm.css" />
+  </head>
+  <body>
+    <header class="appbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">›<i></i></span>
+        <h1>Aider <em>Deck</em></h1>
+      </div>
+      <div class="workspace-controls">
+        <button id="workspace-picker" class="workspace-picker" title="Choose workspace">
+          <span aria-hidden="true">▱</span> <span id="workspace-path">Open workspace</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+        <span class="branch" id="branch" title="Git branch"></span>
+      </div>
+      <span class="local" id="server-address" title="Local server address"></span>
+    </header>
+    <nav id="workspace-tabs" class="workspace-tabs" aria-label="Workspace sessions" hidden></nav>
+    <div class="telemetry" aria-label="Session state">
+      <button id="model-badge" class="metric" title="Open model settings">
+        <small>MODEL</small><strong id="model">—</strong>
+      </button>
+      <div class="metric"><small>MODE</small><strong id="mode">—</strong></div>
+      <div class="metric">
+        <small>ACTIVE FORMAT</small><strong class="warn-text" id="format">UNSET</strong>
+      </div>
+      <button id="context-badge" class="metric context" title="Refresh /tokens">
+        <small>CONTEXT</small
+        ><span
+          ><strong id="context">—</strong
+          ><meter id="context-meter" min="0" max="1" value="0" hidden></meter
+        ></span>
+      </button>
+      <div class="session-controls">
+        <span class="status" id="status">Idle</span
+        ><button id="start" class="primary compact" disabled>Start session</button>
+      </div>
+    </div>
+    <div id="notices" class="notices" aria-live="polite" hidden></div>
+    <main class="desk">
+      <aside id="explorer-pane" class="explorer pane" aria-label="Files and session">
+        <div class="pane-heading">
+          <h2>Explorer</h2>
+          <button
+            class="icon"
+            id="refresh-files"
+            title="Refresh files and tree"
+            aria-label="Refresh files and tree"
+          >
+            ↻
+          </button>
+        </div>
+        <section>
+          <div class="section-title">
+            <h3>Files in chat</h3>
+            <span class="count" id="chat-count">—</span>
+          </div>
+          <div id="chat-files"></div>
+          <form id="add-form" class="inline-form">
+            <input
+              id="add-path"
+              placeholder="Path or glob pattern"
+              aria-label="File path or glob"
+            /><button title="Add files" aria-label="Add files">+</button>
+          </form>
+        </section>
+        <section class="tree-section">
+          <div class="section-title">
+            <h3>File tree</h3>
+            <button class="subtle" id="ignore-edit">.aiderignore</button>
+          </div>
+          <label class="check"><input type="checkbox" id="show-ignored" /> Show ignored</label>
+          <div id="tree"></div>
+        </section>
+        <section>
+          <div class="section-title">
+            <h3>Session usage</h3>
+            <button
+              class="icon"
+              id="refresh-tokens"
+              title="Refresh token usage"
+              aria-label="Refresh token usage"
+            >
+              ↻
+            </button>
+          </div>
+          <div id="usage"></div>
+        </section>
+      </aside>
+      <article class="session-pane">
+        <div class="pane-heading">
+          <div class="title-line">
+            <span class="terminal-sign" aria-hidden="true">›_</span>
+            <h2>Terminal</h2>
+          </div>
+          <div class="actions">
+            <div class="pane-toggles" role="group" aria-label="Side panels">
+              <button type="button" id="toggle-explorer" aria-controls="explorer-pane"
+                aria-expanded="true" aria-label="Hide Explorer" title="Hide Explorer">
+                <span aria-hidden="true" class="pane-symbol left"></span><span>Explorer</span>
+              </button>
+              <button type="button" id="toggle-inspector" aria-controls="inspector-pane"
+                aria-expanded="true" aria-label="Hide Inspector" title="Hide Inspector">
+                <span aria-hidden="true" class="pane-symbol right"></span><span>Inspector</span>
+              </button>
+            </div>
+            <details class="menu">
+              <summary>Session <span aria-hidden="true">⌄</span></summary>
+              <div id="session-menu" class="popup"></div>
+            </details>
+          </div>
+        </div>
+        <div id="terminal-shell">
+          <div
+            id="terminal"
+            aria-label="Aider terminal"
+            title="Click to focus. Use arrow keys or Alt-click within your current input to move the caret. Drag to select terminal text."
+          ></div>
+          <div id="terminal-empty">
+            <div class="terminal-empty-mark" aria-hidden="true">›<i></i></div>
+            <h2 id="empty-heading">Open a workspace</h2>
+            <p id="empty-body">Choose a project folder to start an Aider session.</p>
+            <button id="empty-action">Choose folder</button>
+          </div>
+        </div>
+        <div class="terminal-question" id="terminal-question" hidden>
+          <span role="status" id="terminal-question-text"></span>
+          <button id="focus-answer" type="button">Answer in terminal</button>
+        </div>
+        <div class="commandbar">
+          <span class="section-caption">QUICK ACTIONS</span>
+          <div id="quick-actions"></div>
+          <details class="menu">
+            <summary>More ⌄</summary>
+            <div class="popup above" id="more-actions"></div>
+          </details>
+        </div>
+        <form id="argument-form" class="argument" hidden>
+          <label id="argument-label" for="argument-input"></label
+          ><input id="argument-input" required /><button>Run</button
+          ><button type="button" id="argument-cancel">Cancel</button>
+        </form>
+        <div id="composer-divider" role="separator" tabindex="0" aria-orientation="horizontal"
+          aria-label="Resize Terminal and Composer" aria-controls="terminal-shell composer"
+          aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
+          title="Drag or use Up and Down to resize. Double-click or press Enter to restore automatic sizing."></div>
+        <section id="composer" class="composer">
+          <div class="section-title">
+            <h2>Composer</h2>
+            <button class="subtle" id="interrupt" title="Interrupt Aider (Ctrl+C)">
+              Interrupt <kbd>Ctrl C</kbd>
+            </button>
+          </div>
+          <div id="mode-buttons" class="mode-buttons" aria-label="Sticky chat mode"></div>
+          <p id="mode-request" class="mode-request" role="status" hidden></p>
+          <label class="editor-format"
+            >Architect editor format
+            <select id="composer-editor-format" aria-label="Architect editor format"></select
+          ></label>
+          <textarea
+            id="prompt"
+            rows="3"
+            placeholder="Message Aider or drop files here…"
+            aria-label="Message Aider"
+            spellcheck="false"
+          ></textarea>
+          <ul id="prompt-attachments" aria-label="Read-only attachments" aria-live="polite" hidden></ul>
+          <div id="attachment-feedback" hidden>
+            <span id="attachment-message" role="status"></span>
+            <button id="attachment-dismiss" type="button" class="subtle" hidden>Dismiss</button>
+          </div>
+          <div class="composer-actions">
+            <div class="actions">
+              <button type="button" id="attach-files" aria-label="Attach read-only files"
+                title="Attach read-only files" disabled>+</button>
+              <input type="file" id="attachment-picker" multiple hidden />
+              <label class="check enter-setting"
+                ><input type="checkbox" checked id="enter-sends" /> Enter sends</label
+              >
+            </div>
+            <div class="actions">
+              <select
+                id="once"
+                aria-label="Send once in mode"
+                title="Send current prompt once in a different mode"
+              >
+                <option value="">Send once in mode…</option></select
+              ><button id="send" class="primary">Send ↗</button>
+            </div>
+          </div>
+        </section>
+      </article>
+      <aside id="inspector-pane" class="inspector pane" aria-label="Workspace inspector">
+        <div class="pane-heading"><h2>Inspector</h2></div>
+        <nav class="tabs" id="inspector-tabs" aria-label="Inspector sections"></nav>
+        <div class="inspector-content" id="inspector-content"></div>
+      </aside>
+    </main>
+    <dialog id="dialog">
+      <form method="dialog" class="dialog-heading">
+        <h2 id="dialog-title"></h2>
+        <button aria-label="Close dialog">×</button>
+      </form>
+      <div id="dialog-body"></div>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

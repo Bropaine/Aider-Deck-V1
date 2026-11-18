@@ -1,8 +1,19 @@
-# Local environment and credentials
-.env
-.env.*
-!.env.example
-!.env.*.example
+# Local dotenv files, key material and sensitive file or directory names.
+# Match mixed case on both Windows and case-sensitive checkouts.
+.[eE][nN][vV]
+.[eE][nN][vV].*
+*.[pP][eE][mM]
+*.[kK][eE][yY]
+*.[pP]12
+*.[pP][fF][xX]
+*.[pP][pP][kK]
+[iI][dD]_[rR][sS][aA]*
+[iI][dD]_[eE][dD]25519*
+[iI][dD]_[eE][cC][dD][sS][aA]*
+[iI][dD]_[dD][sS][aA]*
+*[sS][eE][cC][rR][eE][tT]*
+*[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]*
+*[tT][oO][kK][eE][nN]*
 
 # Python environments and generated files
 .venv/
@@ -30,15 +41,27 @@ coverage/
 Thumbs.db
 Desktop.ini
 
-# Aider local state (shared configuration remains trackable)
+# Aider's private history, possibly credential-bearing config, and caches
 .aider.input.history
 .aider.chat.history.md
-.aider.tags.cache*/
+.aider.tags.cache*
+.aider.conf.yml
+/.aider.model.settings.yml
+/.aider.model.metadata.json
 
 # Local worktrees and scratch output
 .worktrees/
 .tmp/
+/deck-state.json
+/deck-state.json.*.tmp
+/deck-state-*.json
+/deck-state-*.json.*.tmp
 *.log
+# Prompt text belongs to the owner. Ship the empty library directory.
+/prompts/*
+!/prompts/.gitkeep
+# Atomic workspace config writes can briefly contain credentials.
+/tmp[a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_]
 
 # Codex local state (keep .codex/config.toml tracked)
 .codex/auth.json

@@ -1,0 +1,10 @@
+{
+  "Harbor working profile": {
+    "model": "openai/gpt-5.6-terra",
+    "edit-format": "diff",
+    "editor-edit-format": "editor-diff",
+    "reasoning-effort": "high",
+    "auto-commits": false,
+    "analytics-disable": true
+  }
+}

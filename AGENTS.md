@@ -4,9 +4,12 @@
 
 - This file applies throughout the Pycharm-Aider-UI repository. Read any more
   specific `AGENTS.md` before editing files in its directory.
-- This is a newly initialized project. No application code, dependency manifest,
-  build command, or test suite exists yet. Update this guidance and `README.md`
-  when those are introduced; do not report nonexistent checks as passing.
+- Aider Deck is a Windows loopback Flask app with a vanilla JS frontend. The
+  transport is a real ConPTY. Drive Aider through terminal input and documented
+  files. Keep Aider imports and direct provider calls out of the application.
+- Treat live coder announcements and launch settings as separate observations.
+  Preserve the registration preview, explicit restart, and mode/format regression
+  tests when changing model or session handling.
 - Work in the current checkout. Use `git rev-parse --show-toplevel` to locate its
   root so commands also work in linked Git worktrees.
 
@@ -28,7 +31,8 @@
 
 ## Verification and handoff
 
-- Run checks appropriate to the changed behavior once the relevant tooling
-  exists. For the current setup, validate TOML syntax and run `git diff --check`.
+- Run `.\.venv\Scripts\python.exe -m pytest -q` and `git diff --check`.
+  For changes to the terminal or its browser controls, run the scratch browser
+  workflow documented in `README.md`.
 - Document reproducible setup, run, and test commands in `README.md` when added.
 - Report what changed, what was verified, and any remaining limitations.

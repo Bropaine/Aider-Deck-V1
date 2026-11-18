@@ -1,0 +1,50 @@
+# Dotenv files (including examples), private keys, and sensitive file or folder names.
+# Use character classes because Aider's gitwildmatch rules are case-sensitive.
+.[eE][nN][vV]
+.[eE][nN][vV].*
+*.[pP][eE][mM]
+*.[kK][eE][yY]
+*.[pP]12
+[iI][dD]_[rR][sS][aA]*
+*[sS][eE][cC][rR][eE][tT]*
+*[cC][rR][eE][dD][eE][nN][tT][iI][aA][lL]*
+*[tT][oO][kK][eE][nN]*
+
+# Aider conversations, map caches and configuration that can contain provider keys.
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache*
+.aider.conf.yml
+/.aider.model.settings.yml
+/.aider.model.metadata.json
+
+# Deck's saved workspaces, composer history, model tags, and atomic state writes.
+/deck-state.json
+/deck-state.json.*.tmp
+/deck-state-[0-9]*.json
+/deck-state-[0-9]*.json.*.tmp
+
+# Owner prompts, runtime logs and scratch session artifacts.
+/prompts/
+*.log
+/.tmp/
+# NamedTemporaryFile siblings can hold unsaved credentials or raw workspace data.
+/tmp[a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_][a-z0-9_]
+
+# Local Codex credentials, histories, logs and state databases.
+/.codex/auth.json
+/.codex/history.jsonl
+/.codex/sessions/
+/.codex/archived_sessions/
+/.codex/log/
+/.codex/tmp/
+/.codex/*.sqlite*
+
+# Git internals, installed dependencies and tool caches.
+.git/
+.venv/
+venv/
+__pycache__/
+node_modules/
+.pytest_cache/
+.ruff_cache/
