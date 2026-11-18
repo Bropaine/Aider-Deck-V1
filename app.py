@@ -622,6 +622,9 @@ def main():
     parser.add_argument(
         "--open", action="store_true", help="Open the local console in your browser."
     )
+    parser.add_argument(
+        "--data-dir", type=Path, help="Store Deck preferences and prompts outside the app directory."
+    )
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("Choose a port between 1 and 65535.")
@@ -642,8 +645,10 @@ def main():
     state_name = (
         "deck-state.json" if args.port == 5177 else f"deck-state-{args.port}.json"
     )
+    data_dir = args.data_dir.expanduser().resolve() if args.data_dir else APP_ROOT
+    data_dir.mkdir(parents=True, exist_ok=True)
     with make_server(
-        "127.0.0.1", args.port, create_app(APP_ROOT / state_name), threaded=True
+        "127.0.0.1", args.port, create_app(data_dir / state_name, data_dir / "prompts"), threaded=True
     ) as server:
         print(f"Aider Deck is listening at {url}. Press Ctrl+C to stop.", flush=True)
         if args.open:

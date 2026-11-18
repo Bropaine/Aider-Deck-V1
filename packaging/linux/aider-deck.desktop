@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Aider-Deck
+Comment=Local console for Aider
+Exec=@EXEC@
+Icon=aider-deck
+Terminal=true
+Categories=Development;

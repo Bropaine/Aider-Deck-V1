@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+launcher_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+app_dir="$launcher_dir/../Resources/app"
+data_dir="$HOME/Library/Application Support/Aider-Deck"
+venv="$data_dir/.venv"
+
+# Finder launches apps without the user's interactive shell setup.
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PYTHONDONTWRITEBYTECODE=1
+mkdir -p -- "$data_dir"
+exec >> "$data_dir/launcher.log" 2>&1
+
+if [[ ! -x "$venv/bin/python" ]]; then
+    if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))'; then
+        printf 'Aider-Deck needs Python 3.11 or newer (python3 on PATH).\n' >&2
+        exit 1
+    fi
+    python3 -m venv "$venv"
+fi
+export PATH="$venv/bin:$PATH"
+
+if ! python -c 'import flask, flask_sock, ruamel.yaml, dotenv, pathspec, PIL.Image' >/dev/null 2>&1; then
+    python -m pip install -r "$app_dir/requirements.txt"
+fi
+if [[ ! -x "$venv/bin/aider" ]]; then
+    python -m pip install aider-chat
+fi
+
+cd -- "$app_dir"
+exec python app.py --data-dir "$data_dir" --open "$@"

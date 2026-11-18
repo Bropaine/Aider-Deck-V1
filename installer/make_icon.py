@@ -1,0 +1,43 @@
+from pathlib import Path
+
+from PIL import Image, ImageDraw
+
+S = 1024
+MINT = (0x8D, 0xE6, 0xC1, 255)
+INK = (0x0C, 0x28, 0x20, 255)
+
+img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+d = ImageDraw.Draw(img)
+d.rounded_rectangle([0, 0, S - 1, S - 1], radius=int(S * 0.20), fill=MINT)
+
+# Chevron as a stroked polyline (slim, like IBM Plex Mono's single guillemet)
+w = int(S * 0.105)
+pts = [(S * 0.265, S * 0.285), (S * 0.485, S * 0.50), (S * 0.265, S * 0.715)]
+d.line(pts, fill=INK, width=w, joint="curve")
+r = w // 2
+for (x, y) in (pts[0], pts[2]):
+    d.ellipse([x - r, y - r, x + r, y + r], fill=INK)
+
+# Cursor bar: underscore position, right of the chevron
+bar_x0, bar_x1 = S * 0.545, S * 0.765
+bar_y0, bar_y1 = S * 0.688, S * 0.763
+d.rectangle([bar_x0, bar_y0, bar_x1, bar_y1], fill=INK)
+
+# Windows ICO
+img.resize((256, 256), Image.LANCZOS).save(
+    "aider-deck.ico",
+    format="ICO",
+    sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
+)
+# Linux PNG set (hicolor theme sizes)
+icons = Path("installer/icons")
+icons.mkdir(parents=True, exist_ok=True)
+for px in (16, 24, 32, 48, 64, 128, 256):
+    img.resize((px, px), Image.LANCZOS).save(icons / f"aider-deck-{px}.png")
+# macOS ICNS (Pillow writes it; iconutil on a Mac is an accepted alternative)
+img.save(
+    "installer/aider-deck.icns",
+    format="ICNS",
+    sizes=[(16, 16), (32, 32), (64, 64), (128, 128), (256, 256), (512, 512), (1024, 1024)],
+)
+print("icons written: aider-deck.ico, installer/icons/*.png, installer/aider-deck.icns")
