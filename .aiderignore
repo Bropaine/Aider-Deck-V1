@@ -43,6 +43,7 @@
 # Git internals, installed dependencies and tool caches.
 .git/
 .venv/
+.deck-venv/
 venv/
 __pycache__/
 node_modules/

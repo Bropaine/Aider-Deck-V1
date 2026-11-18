@@ -20,7 +20,8 @@ def test_private_files_and_runtime_paths_are_ignored():
         "tmph6_83q1a", "prompts/notes.md", ".tmp/recording.txt", "logs/session.log",
         ".codex/auth.json", ".codex/history.jsonl", ".codex/sessions/a.jsonl",
         ".codex/archived_sessions/a.jsonl", ".codex/log/session.txt", ".codex/tmp/file",
-        ".codex/state.sqlite-wal", ".git/config", ".venv/bin/python", "venv/scripts/aider.exe",
+        ".codex/state.sqlite-wal", ".git/config", ".venv/bin/python", ".deck-venv/bin/python",
+        "venv/scripts/aider.exe",
         "deck/__pycache__/files.pyc", "node_modules/pkg/index.js", ".pytest_cache/v/cache/nodeids",
         ".ruff_cache/version/entry",
     ]

@@ -17,6 +17,7 @@
 
 # Python environments and generated files
 .venv/
+.deck-venv/
 venv/
 __pycache__/
 *.py[cod]

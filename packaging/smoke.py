@@ -15,6 +15,9 @@ from urllib.request import Request, urlopen
 from zipfile import ZipFile
 
 
+MODEL = "deck-package-probe"
+
+
 def request(port, path, body=None):
     data = None if body is None else json.dumps(body).encode()
     req = Request(f"http://127.0.0.1:{port}{path}", data=data,
@@ -35,24 +38,28 @@ def wait_for(check, timeout=15):
     raise RuntimeError("Timed out waiting for the packaged Deck server.")
 
 
-def unix_probe(bin_dir, home, bundle):
+def write_unix_probe(bin_dir):
     probe = bin_dir / "aider"
     probe.write_text(
         "#!/bin/sh\n"
         "test \"$1\" = --no-gui || exit 2\n"
-        "printf 'Aider v0.86.2\\nModel: deck-package-probe with diff edit format\\n'\n",
+        f"printf 'Aider v0.86.2\\nModel: {MODEL} with diff edit format\\n'\n",
         encoding="utf-8",
     )
     probe.chmod(0o700)
+
+
+def unix_probe(bin_dir, home, bundle):
+    write_unix_probe(bin_dir)
     env = {
         "HOME": str(home),
         "PATH": str(bin_dir) + os.pathsep + os.defpath,
         "BROWSER": "true",
     }
-    return [str(bundle / "run.sh")], env, "deck-package-probe"
+    return [str(bundle / "run.sh")], env
 
 
-def windows_probe(home, bundle, workspace):
+def windows_probe(bin_dir, home, bundle):
     system_root = Path(os.environ["SystemRoot"])
     system_bin = system_root / "System32"
     git = shutil.which("git")
@@ -61,7 +68,7 @@ def windows_probe(home, bundle, workspace):
     env = {
         "SystemRoot": str(system_root),
         "COMSPEC": str(system_bin / "cmd.exe"),
-        "PATH": os.pathsep.join((str(system_bin), str(Path(git).parent))),
+        "PATH": os.pathsep.join((str(bin_dir), str(system_bin), str(Path(git).parent))),
         "PATHEXT": ".COM;.EXE;.BAT;.CMD",
         "HOME": str(home),
         "USERPROFILE": str(home),
@@ -70,14 +77,32 @@ def windows_probe(home, bundle, workspace):
         "BROWSER": f'"{sys.executable}" -c "pass" %s',
     }
     assert shutil.which("aider", path=env["PATH"]) is None
-    model = "openai/gpt-4o"
-    (workspace / ".aider.conf.yml").write_text(
-        f"model: {model}\nshow-model-warnings: false\ncheck-update: false\n"
-        "analytics: false\ngitignore: false\nmap-tokens: 0\n",
+    source = bin_dir / "probe.cs"
+    source.write_text(
+        "using System;\n"
+        "class Probe {\n"
+        "    static int Main(string[] args) {\n"
+        '        if (args.Length == 0 || args[0] != "--no-gui") return 2;\n'
+        '        Console.WriteLine("Aider v0.86.2");\n'
+        f'        Console.WriteLine("Model: {MODEL} with diff edit format");\n'
+        "        return 0;\n"
+        "    }\n"
+        "}\n",
         encoding="utf-8",
     )
-    command = [env["COMSPEC"], "/d", "/c", "call", str(bundle / "run.bat"), "--install-aider"]
-    return command, env, model
+    compiler = system_root / "Microsoft.NET" / "Framework64" / "v4.0.30319" / "csc.exe"
+    subprocess.run(
+        [str(compiler), "/nologo", f"/out:{bin_dir / 'aider.exe'}", str(source)],
+        check=True,
+    )
+    return [env["COMSPEC"], "/d", "/c", "call", str(bundle / "run.bat")], env
+
+
+def verify_session(port, workspace):
+    opened = json.loads(request(port, "/api/workspaces", {"path": str(workspace)}))
+    prefix = f"/api/{opened['id']}"
+    assert json.loads(request(port, prefix + "/session/start", {}))["ok"]
+    wait_for(lambda: json.loads(request(port, prefix + "/state"))["model"] == MODEL)
 
 
 def stop_server(server):
@@ -106,9 +131,9 @@ def smoke(archive):
         for directory in (home, bin_dir, workspace):
             directory.mkdir()
         if windows:
-            command, env, model = windows_probe(home, bundle, workspace)
+            command, env = windows_probe(bin_dir, home, bundle)
         else:
-            command, env, model = unix_probe(bin_dir, home, bundle)
+            command, env = unix_probe(bin_dir, home, bundle)
         subprocess.run(["git", "init", "-q", str(workspace)], env=env, check=True)
 
         with socket.socket() as listener:
@@ -125,30 +150,13 @@ def smoke(archive):
                             raise RuntimeError(f"Deck exited before serving HTTP ({server.returncode}).")
                         return request(port, "/api/health")
 
-                    health = wait_for(health_check, timeout=300 if windows else 15)
+                    health = wait_for(health_check)
                     assert json.loads(health) == {"app": "aider-deck", "status": "ready"}
                     assert b"Aider" in request(port, "/")
                     assert request(port, "/static/vendor/xterm.js")
-                    opened = json.loads(request(port, "/api/workspaces", {"path": str(workspace)}))
-                    prefix = f"/api/{opened['id']}"
-                    assert json.loads(request(port, prefix + "/session/start", {}))["ok"]
-                    wait_for(
-                        lambda: json.loads(request(port, prefix + "/state"))["model"] == model,
-                        timeout=45 if windows else 15,
-                    )
-                    private = bundle / ".aider-deck"
-                    if windows:
-                        venv = private / "aider-venv"
-                        assert (venv / "deck-install-location").read_text(encoding="utf-8") == str(bundle.resolve())
-                        version = subprocess.check_output(
-                            [str(venv / "Scripts" / "aider.exe"), "--version"],
-                            env=env, cwd=workspace, text=True, timeout=30,
-                        ).strip()
-                        assert version == "aider 0.86.2", version
-                        print(f"{archive.name}: Bundled Deck installed {version} and ran it through ConPTY.")
-                    else:
-                        assert not private.exists()
-                        print(f"{archive.name}: Bundled Deck served the UI and ran the Aider probe from PATH.")
+                    verify_session(port, workspace)
+                    assert not (bundle / ".aider-deck" / "aider-venv").exists()
+                    print(f"{archive.name}: Bundled Deck served the UI and ran the Aider probe from PATH.")
                 except Exception:
                     log.seek(0)
                     print(log.read(), file=sys.stderr)

@@ -39,7 +39,9 @@ For a hosted model, open **Keys**. The link under each built-in provider key ope
 
 ## First-time setup on Linux and macOS
 
-Install Git and Python 3.11 or newer with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Clone Aider-Deck and run the launcher from the checkout.
+Install Git and Python 3.11 or newer with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Install Aider separately using its installation guide, then open a new terminal and check `aider --version`. Deck looks for `aider` on `PATH` and also checks `~/.local/bin`, including when started from the Linux app grid or macOS Finder. [Aider installation guide](https://aider.chat/docs/install.html)
+
+Clone Aider-Deck and run the launcher from the checkout.
 
 ```sh
 git clone https://github.com/Bropaine/Aider-Deck.git
@@ -47,13 +49,12 @@ cd Aider-Deck
 ./run.sh
 ```
 
-The launcher creates `.venv` as needed and installs the web app dependencies, pytest, and the `aider` command there. Open [Aider-Deck on port 5177](http://127.0.0.1:5177/) if the browser does not open automatically. Keep the launcher running, then click **Open workspace** and choose your project. Use **Keys** and **MODEL** to configure a hosted model or **Inspector → Ollama** to select an installed local model.
+The launcher creates `.deck-venv` as needed and installs the web app dependencies there. Open [Aider-Deck on port 5177](http://127.0.0.1:5177/) if the browser does not open automatically. Keep the launcher running, then click **Open workspace** and choose your project. Use **Keys** and **MODEL** to configure a hosted model or **Inspector → Ollama** to select an installed local model.
 
 Use `./run.sh --port 5180` to start on a different port. To start in the foreground without opening a browser after setup, activate the environment and run the app directly.
 
 ```sh
-. .venv/bin/activate
-python app.py
+.deck-venv/bin/python app.py
 ```
 
 ## Run from a portable package
@@ -70,9 +71,9 @@ cd aider-deck-linux-x86_64
 ./run.sh
 ```
 
-Deck uses an existing `aider` on your `PATH`. If it finds none, the launcher offers to install the Aider CLI into a private environment inside this copy of Deck. The first install requires internet access. You can skip it and use the rest of Deck. Run `.\run.bat --install-aider` on Windows or `./run.sh --install-aider` on Linux and macOS to opt in later or from a script. Deck reuses the private install on later launches from the same folder. If you move the extracted folder, rerun the installer to recreate its environment at the new location. The launcher serves port 5177 by default and accepts `--port`.
+Install Aider separately and verify `aider --version` before starting a coding session. You can open Deck and manage settings before installing Aider. The launcher serves port 5177 by default and accepts `--port`. [Aider installation guide](https://aider.chat/docs/install.html)
 
-To build and smoke-test the ZIP from a committed checkout on 64-bit Windows, use Python 3.12 with pip, Git and curl:
+To build and smoke-test the ZIP from a committed checkout on 64-bit Windows, use Python 3.12 with pip, Git and curl. The smoke test builds an Aider stand-in using the Windows .NET Framework C# compiler.
 
 ```powershell
 python packaging/build.py windows-x86_64
@@ -98,11 +99,11 @@ Build from a clean checkout so the installer packages only the project's files. 
 
 ### Linux and macOS packages
 
-Both packages use Python 3.11 or newer with `venv` support and `python3` on PATH. The first launch creates the environment and installs the dependencies.
+Both packages require Git and a separate installation of Aider for coding sessions. First launch creates a fresh `.deck-venv` for the web app and downloads its dependencies. Upgrades keep any earlier `.venv` or `.venv-native` on disk. Use `aider --version` to verify the separately installed command. [Aider installation guide](https://aider.chat/docs/install.html)
 
-**Linux.** From a clean checkout, run `./packaging/linux/install.sh`. Open **Aider-Deck** from the app grid or run `~/.local/share/aider-deck/run.sh`. Close the server console and run `./packaging/linux/uninstall.sh` from the checkout to remove the installed files, launcher, icons, and Deck data under that install directory.
+**Linux.** Install Python 3.11 or newer with `venv` support, then run `./packaging/linux/install.sh` from the extracted release archive or a clean checkout. Open **Aider-Deck** from the app grid or run `~/.local/share/aider-deck/run.sh`. Close the server console and run `./packaging/linux/uninstall.sh` to remove the installed files, launcher, icons, and Deck data under that install directory.
 
-**macOS.** In Terminal, run `python3 --version`. The DMG needs native Python 3.11 or 3.12 for its bundled Aider setup. If your default Python is newer, Deck can also find `python3.12` or `python3.11`. Open the release DMG, or build it from a clean checkout with `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
+**macOS.** In Terminal, run `python3 --version`. The DMG needs native Python 3.11 or 3.12 with `venv` support. If your default Python is newer, Deck can also find `python3.12` or `python3.11`. Open the release DMG, or build it from a clean checkout with `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
 
 If the macOS app closes before the browser opens, run `python3 --version` in Terminal and check `~/Library/Application Support/Aider-Deck/launcher.log` for the startup error. Building the DMG requires Apple’s command-line developer tools (`xcode-select --install`).
 
@@ -339,7 +340,8 @@ node --test tests/*.test.mjs
 On Linux and macOS, run these checks from the checkout after running `./run.sh` once.
 
 ```sh
-.venv/bin/python -m pytest tests/ -q
+.deck-venv/bin/python -m pip install pytest
+.deck-venv/bin/python -m pytest tests/ -q
 node --test tests/*.test.mjs
 ```
 

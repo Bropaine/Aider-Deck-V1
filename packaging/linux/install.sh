@@ -40,3 +40,4 @@ fi
 
 printf 'Installed Aider-Deck to %s\nLauncher: %s\nIcons: %s\n' "$app_dir" "$desktop_file" "$theme_dir"
 printf 'First launch needs Python 3.11 or newer (python3 with venv support) on PATH.\n'
+printf 'Install Git and Aider separately for coding sessions.\n'
