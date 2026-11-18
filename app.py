@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import string
 import subprocess
+import sys
 from datetime import datetime, timezone
 from threading import RLock
 import time
@@ -614,6 +615,17 @@ def create_app(state_path=None, prompt_dir=None):
     return app
 
 
+def open_browser(url):
+    if sys.platform == "darwin":
+        # Browser startup must not hold the local server before it starts serving.
+        try:
+            subprocess.Popen(["/usr/bin/open", url])
+        except OSError:
+            print(f"Open {url} in your browser.", flush=True)
+    else:
+        webbrowser.open(url)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Aider Deck local console")
     parser.add_argument(
@@ -638,7 +650,7 @@ def main():
         except (OSError, ValueError, AttributeError):
             already_running = False
         if already_running:
-            webbrowser.open(url)
+            open_browser(url)
             return
     # Each server owns its PTYs and a single state writer. Parallel instances
     # must not overwrite one another's recent folders, history or preferences.
@@ -652,7 +664,7 @@ def main():
     ) as server:
         print(f"Aider Deck is listening at {url}. Press Ctrl+C to stop.", flush=True)
         if args.open:
-            webbrowser.open(url)
+            open_browser(url)
         server.serve_forever()
 
 
