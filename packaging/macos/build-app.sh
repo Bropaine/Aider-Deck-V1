@@ -25,7 +25,7 @@ xcrun clang -Wall -Wextra -arch arm64 -arch x86_64 -mmacosx-version-min=12.0 \
     -o "$contents/MacOS/aider-deck" "$script_dir/launcher.c"
 xcrun lipo "$contents/MacOS/aider-deck" -verify_arch arm64 x86_64
 tar --exclude=__pycache__ -C "$repo_dir" -cf - \
-    app.py run.sh requirements.txt presets.json deck static templates prompts \
+    app.py run.sh requirements.txt presets.json deck static templates prompts/.gitkeep \
     | tar -C "$app_dir" -xf -
 
 ln -s /Applications "$staging/Applications"

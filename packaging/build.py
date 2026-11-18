@@ -32,7 +32,7 @@ TARGETS = {
         ("win_amd64",),
     ),
 }
-APP_FILES = ("app.py", "deck", "static", "templates", "prompts",
+APP_FILES = ("app.py", "deck", "static", "templates", "prompts/.gitkeep",
              "presets.json", "LICENSE", "README.md")
 
 

@@ -45,7 +45,7 @@ Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "deck\*"; DestDir: "{app}\deck"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "__pycache__"
 Source: "static\*"; DestDir: "{app}\static"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "templates\*"; DestDir: "{app}\templates"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "prompts\*"; DestDir: "{app}\prompts"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "prompts\.gitkeep"; DestDir: "{app}\prompts"; Flags: ignoreversion
 
 [Icons]
 ; Start Menu entry — name "Aider-Deck", target run.bat, icon from the shipped .ico.
