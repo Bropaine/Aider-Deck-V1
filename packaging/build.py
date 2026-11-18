@@ -85,7 +85,7 @@ def build(target, output):
         with tarfile.open(archive, "w:gz", compresslevel=6) as tar:
             tar.add(
                 bundle, arcname=name,
-                filter=lambda member: member.replace(uid=0, gid=0, uname="", gname=""),
+                filter=lambda member: member.replace(uid=0, gid=0, uname="", gname="", deep=False),
             )
         archive.chmod(0o644)
         result = output / archive.name
