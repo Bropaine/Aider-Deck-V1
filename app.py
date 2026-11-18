@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import string
 import subprocess
+import sys
 from datetime import datetime, timezone
 from threading import RLock
 import time
@@ -614,6 +615,17 @@ def create_app(state_path=None, prompt_dir=None):
     return app
 
 
+def open_browser(url):
+    if sys.platform == "darwin":
+        # Browser startup must not hold the local server before it starts serving.
+        try:
+            subprocess.Popen(["/usr/bin/open", url])
+        except OSError:
+            print(f"Open {url} in your browser.", flush=True)
+    else:
+        webbrowser.open(url)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Aider Deck local console")
     parser.add_argument(
@@ -621,6 +633,9 @@ def main():
     )
     parser.add_argument(
         "--open", action="store_true", help="Open the local console in your browser."
+    )
+    parser.add_argument(
+        "--data-dir", type=Path, help="Store Deck preferences and prompts outside the app directory."
     )
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
@@ -635,19 +650,21 @@ def main():
         except (OSError, ValueError, AttributeError):
             already_running = False
         if already_running:
-            webbrowser.open(url)
+            open_browser(url)
             return
     # Each server owns its PTYs and a single state writer. Parallel instances
     # must not overwrite one another's recent folders, history or preferences.
     state_name = (
         "deck-state.json" if args.port == 5177 else f"deck-state-{args.port}.json"
     )
+    data_dir = args.data_dir.expanduser().resolve() if args.data_dir else APP_ROOT
+    data_dir.mkdir(parents=True, exist_ok=True)
     with make_server(
-        "127.0.0.1", args.port, create_app(APP_ROOT / state_name), threaded=True
+        "127.0.0.1", args.port, create_app(data_dir / state_name, data_dir / "prompts"), threaded=True
     ) as server:
         print(f"Aider Deck is listening at {url}. Press Ctrl+C to stop.", flush=True)
         if args.open:
-            webbrowser.open(url)
+            open_browser(url)
         server.serve_forever()
 
 

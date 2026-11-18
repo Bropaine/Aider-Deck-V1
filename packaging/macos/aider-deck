@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+launcher_dir=$(cd -- "$(dirname -- "$0")" && pwd)
+app_dir="$launcher_dir/../Resources/app"
+data_dir="$HOME/Library/Application Support/Aider-Deck"
+venv="$data_dir/.venv"
+
+# Finder launches apps without the user's interactive shell setup.
+export PATH="/opt/homebrew/bin:/usr/local/bin:/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH"
+export PYTHONDONTWRITEBYTECODE=1
+mkdir -p -- "$data_dir"
+exec >> "$data_dir/launcher.log" 2>&1
+architecture=$(uname -m)
+printf '\nAider Deck launch on %s (%s)\n' "$(date)" "$architecture"
+
+report_failure() {
+    local result=$?
+    if (( result != 0 )); then
+        printf 'Aider Deck exited with status %s.\n' "$result" >&2
+        /usr/bin/osascript -e 'display alert "Aider Deck could not start" message "Deck needs native Python 3.11 or 3.12. Run python3 --version in Terminal, then review ~/Library/Application Support/Aider-Deck/launcher.log for the startup error." as critical' || true
+    fi
+}
+trap report_failure EXIT
+
+supported_python() {
+    "$1" -c 'import platform, sys; sys.exit(not ((3, 11) <= sys.version_info[:2] <= (3, 12) and platform.machine() == sys.argv[1]))' "$architecture" >/dev/null 2>&1
+}
+
+# Keep an environment left by an earlier preview if it uses the wrong Python.
+if [[ -e "$venv" ]] && ! supported_python "$venv/bin/python"; then
+    venv="$data_dir/.venv-native"
+fi
+if [[ ! -x "$venv/bin/python" ]]; then
+    python_path=
+    for candidate in python3 python3.12 python3.11 \
+        /Library/Frameworks/Python.framework/Versions/{3.12,3.11}/bin/python3; do
+        if supported_python "$candidate"; then
+            python_path=$(command -v "$candidate")
+            break
+        fi
+    done
+    if [[ -z "$python_path" ]]; then
+        printf 'Aider Deck needs native Python 3.11 or 3.12. Check python3 --version.\n' >&2
+        exit 1
+    fi
+    "$python_path" -m venv "$venv"
+fi
+if ! supported_python "$venv/bin/python"; then
+    printf 'The environment at %s does not use native Python 3.11 or 3.12.\n' "$venv" >&2
+    exit 1
+fi
+export PATH="$venv/bin:$PATH"
+python --version
+
+if ! python -c 'import flask, flask_sock, ruamel.yaml, dotenv, pathspec, PIL.Image' >/dev/null 2>&1; then
+    python -m pip install -r "$app_dir/requirements.txt"
+fi
+if [[ ! -x "$venv/bin/aider" ]]; then
+    python -m pip install aider-chat
+fi
+
+cd -- "$app_dir"
+python app.py --data-dir "$data_dir" --open "$@"

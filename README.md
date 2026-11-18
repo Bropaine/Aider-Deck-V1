@@ -39,7 +39,7 @@ For a hosted model, open **Keys**. The link under each built-in provider key ope
 
 ## First-time setup on Linux and macOS
 
-Install Git and Python 3.12 with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Clone Aider-Deck and run the launcher from the checkout.
+Install Git and Python 3.11 or newer with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Clone Aider-Deck and run the launcher from the checkout.
 
 ```sh
 git clone https://github.com/Bropaine/Aider-Deck.git
@@ -95,6 +95,18 @@ Run `AiderDeck-Setup-0.1.0.exe` to install Deck for your Windows account under `
 Build from a clean checkout so the installer packages only the project's files. If `aider-deck.ico` is missing, run `.\.venv\Scripts\python.exe installer\make_icon.py` from the repository root using the project environment with Pillow installed. Compile `AiderDeck.iss` with [Inno Setup 6](https://jrsoftware.org/isdl.php#stable6). The installer is written to `dist\AiderDeck-Setup-0.1.0.exe`.
 
 ## Running an existing installation
+
+### Linux and macOS packages
+
+Both packages use Python 3.11 or newer with `venv` support and `python3` on PATH. The first launch creates the environment and installs the dependencies.
+
+**Linux.** From a clean checkout, run `./packaging/linux/install.sh`. Open **Aider-Deck** from the app grid or run `~/.local/share/aider-deck/run.sh`. Close the server console and run `./packaging/linux/uninstall.sh` from the checkout to remove the installed files, launcher, icons, and Deck data under that install directory.
+
+**macOS.** In Terminal, run `python3 --version`. The DMG needs native Python 3.11 or 3.12 for its bundled Aider setup. If your default Python is newer, Deck can also find `python3.12` or `python3.11`. Open the release DMG, or build it from a clean checkout with `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
+
+If the macOS app closes before the browser opens, run `python3 --version` in Terminal and check `~/Library/Application Support/Aider-Deck/launcher.log` for the startup error. Building the DMG requires Apple’s command-line developer tools (`xcode-select --install`).
+
+### Run from the checkout
 
 Double-click **run.bat** or run `.\run.bat` in the Deck folder. Use `.\run.bat --port 5180` for another port. For a foreground server without opening a browser, run the following from the same folder after the first setup.
 

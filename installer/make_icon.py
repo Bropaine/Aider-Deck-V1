@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PIL import Image, ImageDraw
 
 S = 1024
@@ -21,9 +23,21 @@ bar_x0, bar_x1 = S * 0.545, S * 0.765
 bar_y0, bar_y1 = S * 0.688, S * 0.763
 d.rectangle([bar_x0, bar_y0, bar_x1, bar_y1], fill=INK)
 
+# Windows ICO
 img.resize((256, 256), Image.LANCZOS).save(
     "aider-deck.ico",
     format="ICO",
     sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)],
 )
-print("aider-deck.ico written")
+# Linux PNG set (hicolor theme sizes)
+icons = Path("installer/icons")
+icons.mkdir(parents=True, exist_ok=True)
+for px in (16, 24, 32, 48, 64, 128, 256):
+    img.resize((px, px), Image.LANCZOS).save(icons / f"aider-deck-{px}.png")
+# macOS ICNS (Pillow writes it; iconutil on a Mac is an accepted alternative)
+img.save(
+    "installer/aider-deck.icns",
+    format="ICNS",
+    sizes=[(16, 16), (32, 32), (64, 64), (128, 128), (256, 256), (512, 512), (1024, 1024)],
+)
+print("icons written: aider-deck.ico, installer/icons/*.png, installer/aider-deck.icns")
