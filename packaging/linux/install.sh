@@ -10,7 +10,7 @@ theme_dir="$data_dir/icons/hicolor"
 
 mkdir -p -- "$app_dir" "$data_dir/applications"
 tar --exclude=__pycache__ -C "$repo_dir" -cf - \
-    app.py run.sh requirements.txt presets.json deck static templates prompts/.gitkeep \
+    app.py run.sh requirements.txt presets.json LICENSE deck static templates prompts/.gitkeep \
     | tar -C "$app_dir" -xf -
 chmod +x -- "$app_dir/run.sh"
 
