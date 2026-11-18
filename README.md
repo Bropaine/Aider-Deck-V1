@@ -284,7 +284,7 @@ Click **Save file**, then restart the workspace’s Aider session. The model and
 | Secret checks | Locally inspects staged files or outgoing Git history. An optional native pre-push hook checks the actual refs being pushed even when Deck is closed. |
 | Aider quick actions | Send the selected slash command, including `/tokens`, `/map`, `/settings`, `/diff`, `/undo`, `/lint`, `/test`, `/run`, `/git`, `/web`, `/copy-context`, `/save`, and `/load`. Aider's `/undo` acts on its own last commit. See [Known limitations](#known-limitations) for `/diff`. |
 | Session menu | Confirmed `/clear`, `/reset`, or `/exit`. Restart replaces the selected workspace's process. |
-| Prompt library | Per-workspace path to a directory of UTF-8 Markdown/text files. Load fills the composer. Send submits it. |
+| Prompt library | Per-workspace path to a directory of UTF-8 Markdown/text files. Deck creates the default `prompts/` directory on first launch, under the app data directory for the macOS bundle. Load fills the composer. Send submits it. |
 
 ## Known limitations
 

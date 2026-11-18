@@ -12,6 +12,24 @@ def client(tmp_path):
     return create_app(tmp_path / "state.json", tmp_path).test_client()
 
 
+def test_first_launch_creates_prompt_library_and_preserves_existing_prompts(tmp_path):
+    data_dir = tmp_path / "Application Support" / "Aider-Deck"
+    prompt_dir = data_dir / "prompts"
+    state_path = data_dir / "deck-state.json"
+    client = create_app(state_path, prompt_dir).test_client()
+    assert prompt_dir.is_dir()
+    wid = client.post("/api/workspaces", json={"path": str(tmp_path)}).json["id"]
+    assert client.get(f"/api/{wid}/prompts").json == {
+        "folder": str(prompt_dir.resolve()), "prompts": [],
+    }
+
+    prompt = prompt_dir / "review.md"
+    prompt.write_text("Review this change.\n", encoding="utf-8")
+    client = create_app(state_path, prompt_dir).test_client()
+    assert client.get(f"/api/{wid}/prompts").json["prompts"][0]["name"] == prompt.name
+    assert prompt.read_text(encoding="utf-8") == "Review this change.\n"
+
+
 def test_loopback_origin_and_json_are_required_for_writes(client, tmp_path):
     payload = {"path": str(tmp_path)}
     assert (

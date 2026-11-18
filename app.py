@@ -147,9 +147,11 @@ def create_app(state_path=None, prompt_dir=None):
         MAX_CONTENT_LENGTH=10 * 1024 * 1024,
         SOCK_SERVER_OPTIONS={"max_message_size": 2 * 1024 * 1024},
     )
+    prompt_library = Path(prompt_dir or APP_ROOT / "prompts")
+    prompt_library.mkdir(parents=True, exist_ok=True)
     deck = Deck(
         Path(state_path or APP_ROOT / "deck-state.json"),
-        Path(prompt_dir or APP_ROOT / "prompts"),
+        prompt_library,
     )
     app.extensions["deck"] = deck
     app.extensions["ollama_services"] = {}
