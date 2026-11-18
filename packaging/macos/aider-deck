@@ -7,10 +7,20 @@ data_dir="$HOME/Library/Application Support/Aider-Deck"
 venv="$data_dir/.venv"
 
 # Finder launches apps without the user's interactive shell setup.
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="/opt/homebrew/bin:/usr/local/bin:/Library/Frameworks/Python.framework/Versions/Current/bin:$PATH"
 export PYTHONDONTWRITEBYTECODE=1
 mkdir -p -- "$data_dir"
 exec >> "$data_dir/launcher.log" 2>&1
+printf '\nAider Deck launch on %s (%s)\n' "$(date)" "$(uname -m)"
+
+report_failure() {
+    local result=$?
+    if (( result != 0 )); then
+        printf 'Aider Deck exited with status %s.\n' "$result" >&2
+        /usr/bin/osascript -e 'display alert "Aider Deck could not start" message "Check Python 3.11 or newer with python3 --version in Terminal, then review ~/Library/Application Support/Aider-Deck/launcher.log for the startup error." as critical' || true
+    fi
+}
+trap report_failure EXIT
 
 if [[ ! -x "$venv/bin/python" ]]; then
     if ! python3 -c 'import sys; sys.exit(sys.version_info < (3, 11))'; then
@@ -29,4 +39,4 @@ if [[ ! -x "$venv/bin/aider" ]]; then
 fi
 
 cd -- "$app_dir"
-exec python app.py --data-dir "$data_dir" --open "$@"
+python app.py --data-dir "$data_dir" --open "$@"

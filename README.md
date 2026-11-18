@@ -66,6 +66,8 @@ Both packages use Python 3.11 or newer with `venv` support and `python3` on PATH
 
 **macOS.** In Terminal, run `python3 --version` and check that it reports Python 3.11 or newer. Deck uses the `python3` command to create its environment. Open the release DMG, or build it from a clean checkout with `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. The app is unsigned. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
 
+If the macOS app closes before the browser opens, run `python3 --version` in Terminal and check `~/Library/Application Support/Aider-Deck/launcher.log` for the startup error. Building the DMG requires Apple’s command-line developer tools (`xcode-select --install`).
+
 ### Run from the checkout
 
 Double-click **run.bat** or run `.\run.bat` in the Deck folder. Use `.\run.bat --port 5180` for another port. For a foreground server without opening a browser, run the following from the same folder after the first setup.
