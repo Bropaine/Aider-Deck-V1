@@ -56,6 +56,29 @@ Use `./run.sh --port 5180` to start on a different port. To start in the foregro
 python app.py
 ```
 
+### Run from a portable package
+
+Download the archive for your machine from a successful **Portable packages** Actions run. The two targets are `linux-x86_64` for 64-bit Intel and AMD Linux with glibc and `macos-arm64` for Apple Silicon Macs. Install Git separately. The archive includes Python and Deck's web dependencies.
+
+Extract the archive to a writable location and run its launcher. For example, on Linux:
+
+```sh
+tar -xzf aider-deck-linux-x86_64.tar.gz
+cd aider-deck-linux-x86_64
+./run.sh
+```
+
+Deck uses an existing `aider` on your `PATH`. If it finds none, the launcher offers to install the Aider CLI into a private environment inside this copy of Deck. The first install requires internet access. You can skip it and use the rest of Deck. Run `./run.sh --install-aider` to opt in later or from a script. Deck reuses the private install on later launches from the same folder. If you move the extracted folder, rerun the installer to recreate its environment at the new location. The launcher serves port 5177 by default and accepts `--port`.
+
+To build the archives from a committed checkout on Linux or macOS, use Python 3.12 with pip, Git and curl:
+
+```sh
+python3 packaging/build.py linux-x86_64
+python3 packaging/build.py macos-arm64
+```
+
+The build writes to `dist/`. Run `python3 packaging/smoke.py dist/aider-deck-linux-x86_64.tar.gz` on Linux or substitute `dist/aider-deck-macos-arm64.tar.gz` on Apple Silicon for a native smoke test.
+
 ## Running an existing installation
 
 Double-click **run.bat** or run `.\run.bat` in the Deck folder. Use `.\run.bat --port 5180` for another port. For a foreground server without opening a browser, run the following from the same folder after the first setup.

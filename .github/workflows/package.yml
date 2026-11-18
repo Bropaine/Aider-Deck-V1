@@ -1,0 +1,53 @@
+name: Portable packages
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/package.yml
+      - packaging/**
+      - app.py
+      - deck/**
+      - static/**
+      - templates/**
+      - prompts/**
+      - presets.json
+      - requirements.txt
+      - README.md
+      - LICENSE
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: linux-x86_64
+            runner: ubuntu-22.04
+          - target: macos-arm64
+            runner: macos-15
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Build the archive
+        run: python packaging/build.py "$TARGET"
+      - name: Smoke-test the extracted archive
+        run: python packaging/smoke.py "dist/aider-deck-$TARGET.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          path: dist/aider-deck-${{ matrix.target }}.tar.gz
+          archive: false
+          if-no-files-found: error
