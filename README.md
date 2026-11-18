@@ -2,9 +2,21 @@
 
 Aider-Deck is a local web UI for the Aider coding assistant on Windows, Linux, and macOS. Use Ollama or a cloud model, add or drop project files, switch coding modes, and review Git diffs and commits in your browser. Each workspace has a real Aider terminal that stays running when you switch tabs or reconnect.
 
+## Install order for release downloads
+
+| OS | 1. Install Python | 2. Install Git | 3. Install Aider | 4. Install Aider-Deck |
+| --- | --- | --- | --- | --- |
+| Windows | Python 3.11 or newer. Enable **Add python.exe to PATH**, then check `python --version`. | Git for Windows. Check `git --version`. | Install the Aider CLI separately, then check `aider --version` in a new PowerShell window. | Run `AiderDeck-Setup-0.1.0.exe` and open **Aider-Deck** from the Start Menu. |
+| Linux | Python 3.11 or newer with `venv` support. Check `python3 --version`. Some distributions package `venv` separately. | Check `git --version`. | Install the Aider CLI separately, then check `aider --version` in a new terminal. | Extract `AiderDeck-0.1.0-linux.tar.gz`, run `./packaging/linux/install.sh`, and open **Aider-Deck** from the app grid. |
+| macOS | Native Python 3.11 or 3.12 with `venv` support. Check `python3 --version` in Terminal. If it shows a newer version, check `python3.12 --version` or `python3.11 --version`. | Check `git --version`. | Install the Aider CLI separately, then check `aider --version` in a new terminal. | Open `AiderDeck-0.1.0-macOS-native.dmg` and copy **Aider Deck.app** to `~/Applications`. |
+
+Python runs Deck. Git and Aider are required for coding sessions. Deck downloads its Python dependencies on first launch. [Release downloads](https://github.com/Bropaine/Aider-Deck/releases/tag/v0.1.0) · [Aider installation guide](https://aider.chat/docs/install.html)
+
+**Ollama is optional on every OS.** Install it only if you want to use local Ollama models. For cloud models, configure your provider credentials in **Keys**. [Ollama for Windows](https://docs.ollama.com/windows) · [Ollama for Linux](https://docs.ollama.com/linux) · [Ollama for macOS](https://docs.ollama.com/macos)
+
 ## First-time setup on Windows
 
-**1. Install Python and Git.** Python 3.12 is the version tested with Deck. Install Python for Windows and Git for Windows, then open a **new PowerShell** window. Both commands below should print a version. If Windows cannot find one, finish its installer, enable its command-line/PATH option and reopen PowerShell. [Python for Windows](https://www.python.org/downloads/windows/) · [Git for Windows](https://git-scm.com/install/windows)
+**1. Install Python 3.11 or newer, then install Git.** Python 3.12 is the version tested with Deck. Open a **new PowerShell** window. Both commands below should print a version. If Windows cannot find one, finish its installer, enable its command-line/PATH option and reopen PowerShell. [Python for Windows](https://www.python.org/downloads/windows/) · [Git for Windows](https://git-scm.com/install/windows)
 
 ```powershell
 python --version
@@ -33,13 +45,13 @@ Start Deck from that folder, or double-click **run.bat** in File Explorer.
 
 On first launch, Deck creates its own `.venv`, installs the web app's dependencies and opens [Aider-Deck on port 5177](http://127.0.0.1:5177/). Keep the launcher window open while working.
 
-**4. Start your first chat.** Click **Open workspace** and choose the folder containing the project you want help with. For a local model, install Ollama for Windows, then open **Inspector → Ollama**. If the service is stopped, click **Start Ollama**. Click **Refresh Ollama** to list installed tags and **Use in Aider** beside the model you want. If the list is empty, enter a library tag such as `qwen2.5-coder:1.5b`, click **Download model**, wait for **Installed**, then click **Use in Aider**. Select **Ask** and send a short question to verify the setup. [Ollama for Windows](https://docs.ollama.com/windows) · [Example model](https://ollama.com/library/qwen2.5-coder:1.5b)
+**4. Start your first chat.** Click **Open workspace** and choose the folder containing the project you want help with. To use a local Ollama model, install Ollama for Windows, then open **Inspector → Ollama**. If the service is stopped, click **Start Ollama**. Click **Refresh Ollama** to list installed tags and **Use in Aider** beside the model you want. If the list is empty, enter a library tag such as `qwen2.5-coder:1.5b`, click **Download model**, wait for **Installed**, then click **Use in Aider**. Select **Ask** and send a short question to verify the setup. [Ollama for Windows](https://docs.ollama.com/windows) · [Example model](https://ollama.com/library/qwen2.5-coder:1.5b)
 
 For a hosted model, open **Keys**. The link under each built-in provider key opens its public API platform or setup guide, where you can sign in or create an account. Save the key in Deck. If your provider requires a custom endpoint, save its base URL there too. Open **MODEL**, choose or type the provider’s model ID, click **Save for next launch**, then **Start session**. A successful chat reply verifies the connection.
 
 ## First-time setup on Linux and macOS
 
-Install Git and Python 3.11 or newer with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Install Aider separately using its installation guide, then open a new terminal and check `aider --version`. Deck looks for `aider` on `PATH` and also checks `~/.local/bin`, including when started from the Linux app grid or macOS Finder. [Aider installation guide](https://aider.chat/docs/install.html)
+For a source checkout, install Python 3.11 or newer with `venv` support, then Git. Check `python3 --version` and `git --version` in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Install Aider separately using its installation guide, then open a new terminal and check `aider --version`. Deck looks for `aider` on `PATH` and also checks `~/.local/bin`, including when started from the Linux app grid or macOS Finder. [Aider installation guide](https://aider.chat/docs/install.html)
 
 Clone Aider-Deck and run the launcher from the checkout.
 
