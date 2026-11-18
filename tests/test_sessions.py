@@ -1,4 +1,5 @@
 import argparse
+import os
 from unittest.mock import Mock
 
 import pytest
@@ -285,28 +286,49 @@ def test_composer_quotes_literal_tabs_at_fancy_aider_prompt(tmp_path):
     assert "\r\x1b[200~\tindented\x1b[201~\r}\r" in raw
 
 
-def test_fresh_conpty_advertises_its_own_terminal_and_drops_previous_screen(
+def test_fresh_terminal_advertises_its_own_terminal_and_drops_previous_screen(
     tmp_path, monkeypatch
 ):
-    import winpty
+    if os.name == "nt":
+        import winpty
 
-    proc = Mock(pid=123)
-    monkeypatch.setattr(winpty, "PTY", Mock(return_value=proc))
-    monkeypatch.setattr("deck.sessions.shutil.which", lambda _: "aider.exe")
-    monkeypatch.setattr("deck.sessions.threading.Thread", Mock())
+        proc = Mock(pid=123)
+        monkeypatch.setattr(winpty, "PTY", Mock(return_value=proc))
+        executable = "aider.exe"
+        monkeypatch.setattr("deck.sessions.threading.Thread", Mock())
+    else:
+        probe = tmp_path / "aider probe"
+        probe.write_text(
+            "#!/bin/sh\nprintf '%s|%s|%s\\n' \"$KEEP\" \"$TERM\" \"${Term-unset}\"\n",
+            encoding="utf-8",
+        )
+        probe.chmod(0o700)
+        executable = str(probe)
+
+    monkeypatch.setattr("deck.sessions.shutil.which", lambda _: executable)
     session = AiderSession(tmp_path)
     session.output.append("previous session's question")
     cursor = session.output.end
     launcher = {"Term": "dumb", "KEEP": "value"}
-    session.start({}, launcher)
-    assert proc.spawn.call_args.kwargs["env"].split("\0") == [
-        "KEEP=value",
-        "TERM=xterm-256color",
-        "",
-    ]
-    assert launcher["Term"] == "dumb"
-    assert session.output.read(cursor) == (cursor + 1, "", True)
-    assert session.snapshot()["input_state"] == "starting"
+    with session.lock:
+        session.start({}, launcher)
+        try:
+            assert launcher["Term"] == "dumb"
+            assert session.output.read(cursor) == (cursor + 1, "", True)
+            assert session.snapshot()["input_state"] == "starting"
+            if os.name == "nt":
+                assert proc.spawn.call_args.kwargs["env"].split("\0") == [
+                    "KEEP=value",
+                    "TERM=xterm-256color",
+                    "",
+                ]
+            else:
+                assert session.lock.wait_for(lambda: session.output.end > cursor + 1, 5)
+                _, output, reset = session.output.read(cursor)
+                assert reset and output == "value|xterm-256color|unset\n"
+        finally:
+            if os.name != "nt":
+                session.close()
 
 
 def test_queued_mode_waits_for_real_empty_prompt_and_can_be_replaced(tmp_path):

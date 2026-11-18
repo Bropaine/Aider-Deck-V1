@@ -1,8 +1,9 @@
-"""Drive the installed Aider through a Windows ConPTY. No Aider imports."""
+"""Drive the installed Aider through a pseudoterminal. No Aider imports."""
 
 from __future__ import annotations
 
 import copy
+import os
 import re
 import secrets as random_secrets
 import shutil
@@ -620,6 +621,7 @@ class AiderSession:
         self.lifecycle = threading.RLock()
         self.proc = None
         self.status, self.error, self.exit_code = "idle", None, None
+        self._output_error = "ConPTY output stopped unexpectedly."
         self.launch = {}
         self.model_format_errors = {}
         self.output = OutputRing()
@@ -648,33 +650,43 @@ class AiderSession:
             executable = shutil.which("aider")
             if not executable:
                 raise ValueError("Aider was not found on the server PATH.")
+            start_error = "Could not start Aider under Windows ConPTY."
             try:
-                from winpty import Backend, PTY
+                if os.name == "nt":
+                    from winpty import Backend, PTY
 
-                proc = PTY(self.cols, self.rows, backend=Backend.ConPTY)
-                # Windows CreateProcess takes an executable and one encoded argv.
-                # list2cmdline implements the same quoting used by subprocess.
-                # The child is attached to Deck's xterm/ConPTY, independently
-                # of the server launcher (which may advertise TERM=dumb).
-                child_env = {k: v for k, v in env.items() if k.upper() != "TERM"}
-                child_env["TERM"] = "xterm-256color"
-                block = (
-                    "\0".join(
-                        f"{key}={value}" for key, value in sorted(child_env.items())
+                    proc = PTY(self.cols, self.rows, backend=Backend.ConPTY)
+                    # Windows CreateProcess takes an executable and one encoded argv.
+                    # list2cmdline implements the same quoting used by subprocess.
+                    # The child is attached to Deck's xterm/ConPTY, independently
+                    # of the server launcher (which may advertise TERM=dumb).
+                    child_env = {k: v for k, v in env.items() if k.upper() != "TERM"}
+                    child_env["TERM"] = "xterm-256color"
+                    block = (
+                        "\0".join(
+                            f"{key}={value}" for key, value in sorted(child_env.items())
+                        )
+                        + "\0"
                     )
-                    + "\0"
-                )
-                proc.spawn(
-                    executable,
-                    cmdline=" " + subprocess.list2cmdline(args[1:]),
-                    cwd=str(self.root),
-                    env=block,
-                )
+                    proc.spawn(
+                        executable,
+                        cmdline=" " + subprocess.list2cmdline(args[1:]),
+                        cwd=str(self.root),
+                        env=block,
+                    )
+                else:
+                    start_error = "Could not start Aider under the Unix PTY."
+                    from .pty_unix import UnixPTY
+
+                    child_env = {k: v for k, v in env.items() if k.upper() != "TERM"}
+                    child_env["TERM"] = "xterm-256color"
+                    proc = UnixPTY(
+                        [executable, *args[1:]], str(self.root), child_env,
+                        self.cols, self.rows,
+                    )
+                    self._output_error = "Unix PTY output stopped unexpectedly."
             except Exception:
-                self.status, self.error = (
-                    "exited",
-                    "Could not start Aider under Windows ConPTY.",
-                )
+                self.status, self.error = "exited", start_error
                 raise ValueError(self.error) from None
             self.obs = Observations(self.attachments)
             self.model_format_errors = dict(model_format_errors or {})
@@ -741,18 +753,26 @@ class AiderSession:
                     self.attachments.close()
                     return
                 self.status = "restarting"
-            # A Windows Python launcher can own another Python process. Stop the
-            # entire tree before permitting a replacement to use the workspace.
-            if proc.isalive():
-                result = subprocess.run(
-                    ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
-                    capture_output=True,
-                    creationflags=subprocess.CREATE_NO_WINDOW,
-                )
-                if result.returncode and proc.isalive():
+            if os.name == "nt":
+                # A Windows Python launcher can own another Python process. Stop the
+                # entire tree before permitting a replacement to use the workspace.
+                if proc.isalive():
+                    result = subprocess.run(
+                        ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                        capture_output=True,
+                        creationflags=subprocess.CREATE_NO_WINDOW,
+                    )
+                    if result.returncode and proc.isalive():
+                        with self.lock:
+                            self.status = "live"
+                        raise ValueError("Windows could not stop this Aider process.")
+            else:
+                try:
+                    proc.terminate()
+                except OSError:
                     with self.lock:
                         self.status = "live"
-                    raise ValueError("Windows could not stop this Aider process.")
+                    raise ValueError("Unix could not stop this Aider process.") from None
             with self.lock:
                 proc.cancel_io()
                 self.proc = None
@@ -783,7 +803,7 @@ class AiderSession:
         except Exception:
             with self.lock:
                 if proc is self.proc and proc.isalive() and self.status == "live":
-                    self.error = "ConPTY output stopped unexpectedly."
+                    self.error = self._output_error
         finally:
             if launch_files:
                 launch_files.cleanup()

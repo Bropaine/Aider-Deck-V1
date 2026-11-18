@@ -1,6 +1,6 @@
 # Aider-Deck
 
-Aider-Deck is a local Windows web UI for the Aider coding assistant. Use Ollama or a cloud model, add or drop project files, switch coding modes, and review Git diffs and commits in your browser. Each workspace has a real Aider terminal that stays running when you switch tabs or reconnect.
+Aider-Deck is a local web UI for the Aider coding assistant on Windows, Linux, and macOS. Use Ollama or a cloud model, add or drop project files, switch coding modes, and review Git diffs and commits in your browser. Each workspace has a real Aider terminal that stays running when you switch tabs or reconnect.
 
 ## First-time setup on Windows
 
@@ -36,6 +36,25 @@ On first launch, Deck creates its own `.venv`, installs the web app's dependenci
 **4. Start your first chat.** Click **Open workspace** and choose the folder containing the project you want help with. For a local model, install Ollama for Windows, then open **Inspector → Ollama**. If the service is stopped, click **Start Ollama**. Click **Refresh Ollama** to list installed tags and **Use in Aider** beside the model you want. If the list is empty, enter a library tag such as `qwen2.5-coder:1.5b`, click **Download model**, wait for **Installed**, then click **Use in Aider**. Select **Ask** and send a short question to verify the setup. [Ollama for Windows](https://docs.ollama.com/windows) · [Example model](https://ollama.com/library/qwen2.5-coder:1.5b)
 
 For a hosted model, open **Keys**. The link under each built-in provider key opens its public API platform or setup guide, where you can sign in or create an account. Save the key in Deck. If your provider requires a custom endpoint, save its base URL there too. Open **MODEL**, choose or type the provider’s model ID, click **Save for next launch**, then **Start session**. A successful chat reply verifies the connection.
+
+## First-time setup on Linux and macOS
+
+Install Git and Python 3.12 with `venv` support, and make sure `python3 --version` and `git --version` work in your terminal. On Linux distributions that package `venv` separately, install the package for your Python version. Clone Aider-Deck and run the launcher from the checkout.
+
+```sh
+git clone https://github.com/Bropaine/Aider-Deck.git
+cd Aider-Deck
+./run.sh
+```
+
+The launcher creates `.venv` as needed and installs the web app dependencies, pytest, and the `aider` command there. Open [Aider-Deck on port 5177](http://127.0.0.1:5177/) if the browser does not open automatically. Keep the launcher running, then click **Open workspace** and choose your project. Use **Keys** and **MODEL** to configure a hosted model or **Inspector → Ollama** to select an installed local model.
+
+Use `./run.sh --port 5180` to start on a different port. To start in the foreground without opening a browser after setup, activate the environment and run the app directly.
+
+```sh
+. .venv/bin/activate
+python app.py
+```
 
 ## Running an existing installation
 
@@ -264,6 +283,13 @@ Deck binds only to IPv4 loopback and checks browser origin. The workspace and it
 ```powershell
 .\.venv\Scripts\python.exe -m pip install pytest
 .\.venv\Scripts\python.exe -m pytest -q
+node --test tests/*.test.mjs
+```
+
+On Linux and macOS, run these checks from the checkout after running `./run.sh` once.
+
+```sh
+.venv/bin/python -m pytest tests/ -q
 node --test tests/*.test.mjs
 ```
 
