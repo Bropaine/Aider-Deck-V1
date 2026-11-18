@@ -10,7 +10,7 @@ Aider-Deck is a local web UI for the Aider coding assistant on Windows, Linux, a
 | Linux | Python 3.11 or newer with `venv` support. Check `python3 --version`. Some distributions package `venv` separately. | Check `git --version`. | Install the Aider CLI separately, then check `aider --version` in a new terminal. | Extract `AiderDeck-0.1.0-linux.tar.gz`, run `./packaging/linux/install.sh`, and open **Aider-Deck** from the app grid. |
 | macOS | Native Python 3.11 or 3.12 with `venv` support. Check `python3 --version` in Terminal. If it shows a newer version, check `python3.12 --version` or `python3.11 --version`. | Check `git --version`. | Install the Aider CLI separately, then check `aider --version` in a new terminal. | Open `AiderDeck-0.1.0-macOS-native.dmg` and copy **Aider Deck.app** to `~/Applications`. |
 
-Python runs Deck. Git and Aider are required for coding sessions. Deck downloads its Python dependencies on first launch. [Release downloads](https://github.com/Bropaine/Aider-Deck/releases/tag/v0.1.0) · [Aider installation guide](https://aider.chat/docs/install.html)
+Python runs Deck. Git and Aider are required for coding sessions. Deck downloads its Python dependencies on first launch. [Release downloads](https://github.com/Bropaine/Aider-Deck-V1/releases/tag/v0.1.0) · [Aider installation guide](https://aider.chat/docs/install.html)
 
 **Ollama is optional on every OS.** Install it only if you want to use local Ollama models. For cloud models, configure your provider credentials in **Keys**. [Ollama for Windows](https://docs.ollama.com/windows) · [Ollama for Linux](https://docs.ollama.com/linux) · [Ollama for macOS](https://docs.ollama.com/macos)
 
@@ -56,7 +56,7 @@ For a source checkout, install Python 3.11 or newer with `venv` support, then Gi
 Clone Aider-Deck and run the launcher from the checkout.
 
 ```sh
-git clone https://github.com/Bropaine/Aider-Deck.git
+git clone https://github.com/Bropaine/Aider-Deck-V1.git Aider-Deck
 cd Aider-Deck
 ./run.sh
 ```
