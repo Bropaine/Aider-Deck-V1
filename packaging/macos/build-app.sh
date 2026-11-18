@@ -21,8 +21,9 @@ cp -- "$script_dir/Info.plist" "$contents/Info.plist"
 cp -- "$repo_dir/installer/aider-deck.icns" "$contents/Resources/AiderDeck.icns"
 cp -- "$script_dir/aider-deck" "$contents/Resources/aider-deck.sh"
 # Launch Services treats script-only app bundles as Intel apps on Apple silicon.
-xcrun clang -Wall -Wextra -arch arm64 -arch x86_64 -mmacosx-version-min=12.0 \
-    -o "$contents/MacOS/aider-deck" "$script_dir/launcher.c"
+xcrun clang -Wall -Wextra -fobjc-arc -framework AppKit \
+    -arch arm64 -arch x86_64 -mmacosx-version-min=12.0 \
+    -o "$contents/MacOS/aider-deck" "$script_dir/launcher.m"
 xcrun lipo "$contents/MacOS/aider-deck" -verify_arch arm64 x86_64
 tar --exclude=__pycache__ -C "$repo_dir" -cf - \
     app.py run.sh requirements.txt presets.json deck static templates prompts/.gitkeep \

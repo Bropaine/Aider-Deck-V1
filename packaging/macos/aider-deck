@@ -61,4 +61,12 @@ if [[ ! -x "$venv/bin/aider" ]]; then
 fi
 
 cd -- "$app_dir"
-python app.py --data-dir "$data_dir" --open "$@"
+python app.py --data-dir "$data_dir" --open "$@" &
+server_pid=$!
+stop_server() {
+    kill "$server_pid" 2>/dev/null || true
+    wait "$server_pid" || true
+    exit 0
+}
+trap stop_server TERM INT
+wait "$server_pid"
