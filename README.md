@@ -64,7 +64,7 @@ Both packages use Python 3.11 or newer with `venv` support and `python3` on PATH
 
 **Linux.** From a clean checkout, run `./packaging/linux/install.sh`. Open **Aider-Deck** from the app grid or run `~/.local/share/aider-deck/run.sh`. Close the server console and run `./packaging/linux/uninstall.sh` from the checkout to remove the installed files, launcher, icons, and Deck data under that install directory.
 
-**macOS.** From a clean checkout on a Mac, run `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. The app is unsigned. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
+**macOS.** In Terminal, run `python3 --version` and check that it reports Python 3.11 or newer. Deck uses the `python3` command to create its environment. Open the release DMG, or build it from a clean checkout with `./packaging/macos/build-app.sh` and open `dist/AiderDeck-0.1.0.dmg`. Drag **Aider Deck** to your user’s `~/Applications` folder. The app is unsigned. On first launch, right-click it in Finder and choose **Open**. If macOS blocks that, use **System Settings → Privacy & Security → Open Anyway**. To uninstall, quit Deck, move the app to the Trash, and remove `~/Library/Application Support/Aider-Deck` to delete its environment and stored Deck data.
 
 ### Run from the checkout
 
